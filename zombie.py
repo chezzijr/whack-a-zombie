@@ -2,7 +2,7 @@ import pygame
 from pygame import sprite
 from animate import Animation
 from enum import Enum
-
+from signaling import Signal
 
 class ZombieState(Enum):
     MOVE = 0
@@ -58,12 +58,14 @@ class Zombie(sprite.Sprite):
         self.speed = 100
         self.dps = 1 # 1 damage per second
         self.is_alive = True
+        self.kill_signal = Signal()
 
     def update(self, dt: float, targets: sprite.Group, events):
         for event in events:
             if event.type == pygame.MOUSEBUTTONDOWN:
                 if self.rect.collidepoint(event.pos):
                     self.is_alive = False
+                    self.kill_signal.emit() # emit to game manager that this zombie is dead
 
         target = self.look_for_closest_target(targets)
         if target is None:
