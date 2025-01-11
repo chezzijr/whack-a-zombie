@@ -83,7 +83,7 @@ class GameManager:
                 zombie_group.add(zombie)
 
             # spawner to spawn in a bullet
-            if time_since_last_bullet_spawn >= bullet_spawn_interval / max(level // 2, 1):
+            if time_since_last_bullet_spawn >= bullet_spawn_interval / max(level // 3, 1):
                 time_since_last_bullet_spawn = 0
                 spawn_pos = random.choice([
                     pygame.Vector2(-40, random.randint(0, screen_h)),  # left
