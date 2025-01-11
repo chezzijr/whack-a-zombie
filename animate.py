@@ -2,10 +2,15 @@ import pygame
 
 class Animation:
     def __init__(self, frames: list[pygame.Surface], repeat: bool = True):
+        if not frames:
+            raise ValueError("No frames provided")
         self.frames = frames
         self.current_frame = 0
         self.frame_count = len(frames)
         self.repeat = repeat
+
+    def get_first_frame(self) -> pygame.Surface:
+        return self.frames[0]
 
     # only return None if the animation is not repeating and reached the end
     def next_frame(self, flip=False) -> pygame.Surface | None:

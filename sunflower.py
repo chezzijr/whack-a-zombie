@@ -18,8 +18,7 @@ class Sunflower(pygame.sprite.Sprite):
             repeat=True,
         )
 
-        self.image = self.animation.next_frame()
-        assert self.image is not None
+        self.image = self.animation.get_first_frame()
         self.rect = self.image.get_rect(center=pos)
         self.health = SUNFLOWER_HEALTH
 

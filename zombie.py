@@ -52,8 +52,7 @@ class Zombie(sprite.Sprite):
         self.attack_animation = Animation(load_attack_images(), repeat=True)
         self.die_animation = Animation(load_die_images(), repeat=False)
 
-        self.image = self.move_animation.next_frame()
-        assert self.image is not None
+        self.image = self.move_animation.get_first_frame()
         self.rect = self.image.get_rect(center=pos)
         self.speed = 100
         self.dps = 1 # 1 damage per second

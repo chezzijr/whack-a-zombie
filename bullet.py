@@ -34,7 +34,7 @@ class Bullet(pygame.sprite.Sprite):
         v1, v2 = largest_angle_pair
         # random between 0 and 1 with normal distribution
         r = np.random.beta(5, 5)
-        v = v1.lerp(v2, r) # v1 + r * (v2 - v1)
+        v = v1.lerp(v2, r)
         return v.normalize()
 
     def is_out_of_screen(self):
@@ -48,4 +48,7 @@ class Bullet(pygame.sprite.Sprite):
             self.kill()
 
     def collide_with_cursor(self):
-        return self.rect.collidepoint(pygame.mouse.get_pos())
+        # if bullet is colliding with cursor within the screen
+        return self.rect.collidepoint(pygame.mouse.get_pos()) \
+                and 0 <= self.rect.centerx <= self.screen_size[0] \
+                and 0 <= self.rect.centery <= self.screen_size[1]

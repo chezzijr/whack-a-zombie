@@ -6,6 +6,7 @@ from sunflower import Sunflower
 from pygame import sprite
 from zombie import Zombie
 from bullet import Bullet
+from mallet import Mallet
 
 WHITE = (255, 255, 255)
 
@@ -28,7 +29,13 @@ class GameManager:
         zombie_group = sprite.Group()
         bullet_group = sprite.Group()
         cursor_group = sprite.GroupSingle()
-        sunflower_group.add(Sunflower(pygame.Vector2(screen_w // 2, screen_h // 2)))
+        cursor_group.add(Mallet())
+
+        num_sunflowers = 3
+        for _ in range(num_sunflowers):
+            x = random.randint(screen_w // 4, 3 * screen_w // 4)
+            y = random.randint(screen_h // 4, 3 * screen_h // 4)
+            sunflower_group.add(Sunflower(pygame.Vector2(x, y)))
 
         zombie_spawn_interval = 3
         time_since_last_zombie_spawn = zombie_spawn_interval  # spawn immediately
@@ -47,7 +54,7 @@ class GameManager:
             score += 1
 
         while True:
-            dt = clock.tick(24) / 1000  # in seconds
+            dt = clock.tick(30) / 1000  # in seconds
             time_since_last_zombie_spawn += dt
             time_since_last_bullet_spawn += dt
 
@@ -76,7 +83,7 @@ class GameManager:
                 zombie_group.add(zombie)
 
             # spawner to spawn in a bullet
-            if time_since_last_bullet_spawn >= bullet_spawn_interval:
+            if time_since_last_bullet_spawn >= bullet_spawn_interval / max(level // 2, 1):
                 time_since_last_bullet_spawn = 0
                 spawn_pos = random.choice([
                     pygame.Vector2(-40, random.randint(0, screen_h)),  # left
@@ -93,13 +100,20 @@ class GameManager:
             zombie_group.update(dt, sunflower_group, events)
             sunflower_group.update()
             bullet_group.update(dt)
+            cursor_group.update()
 
             if len(sunflower_group) == 0:
                 return score
 
-            for bullet in bullet_group:
-                if bullet.collide_with_cursor():
-                    return score
+            # check collision between bullet and cursor
+            collisions = pygame.sprite.groupcollide(
+                cursor_group, bullet_group, False, True
+            )
+            for cursor in collisions:
+                cursor.receive_dmg(1)
+
+            if len(cursor_group) == 0:
+                return score
 
             if self.background:
                 self.global_screen.blit(self.background, (0, 0))
@@ -112,6 +126,10 @@ class GameManager:
                 sunflower.draw_health_bar(self.global_screen)
 
             bullet_group.draw(self.global_screen)
+            cursor_group.draw(self.global_screen)
+
+            for cursor in cursor_group:
+                cursor.draw_health_bar(self.global_screen)
 
             font = pygame.font.Font(pygame_menu.font.FONT_MUNRO, 36)
             margin = 10
