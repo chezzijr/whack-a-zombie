@@ -75,8 +75,8 @@ class Zombie(sprite.Sprite):
         for event in events:
             if event.type == pygame.MOUSEBUTTONDOWN:
                 if self.rect.collidepoint(event.pos):
-                    self.is_alive = False
-                    if self.pos_hit is None:
+                    if self.is_alive:
+                        self.is_alive = False
                         self.pos_hit = event.pos
                         self.kill_signal.emit() # emit to game manager that this zombie is dead and run only once
 

@@ -57,7 +57,6 @@ class GameManager:
         level = 1
 
 
-
         def on_zombie_die():
             nonlocal score
             score += 1
@@ -154,7 +153,7 @@ class GameManager:
             for cursor in cursor_group:
                 cursor.draw_health_bar(self.global_screen)
 
-            font = pygame.font.Font(pygame_menu.font.FONT_MUNRO, 36)
+            font = pygame.font.Font(pygame_menu.font.FONT_MUNRO, 36) # type: ignore
             margin = 10
             # draw level at top left
             text = font.render(f"Level: {level}", True, (255, 255, 255))
@@ -167,7 +166,6 @@ class GameManager:
             )
 
             pygame.display.flip()
-        return score
 
     def run(self):
         while True:
@@ -186,7 +184,7 @@ class GameManager:
                 menu.add.label(f"Score: {score}")
                 menu.add.label(f"Highscore: {self.highscore}")
             menu.add.button("Play Again", action=lambda: menu.disable())
-            menu.add.button("Quit", pygame_menu.events.EXIT)
+            menu.add.button("Quit", pygame_menu.events.EXIT) # type: ignore
             menu.mainloop(self.global_screen)
 
 
