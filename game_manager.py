@@ -1,3 +1,4 @@
+from io import BytesIO
 import pygame
 import random
 import pygame_menu
@@ -12,14 +13,25 @@ WHITE = (255, 255, 255)
 
 
 class GameManager:
-    def __init__(self, width=1280, height=720):
+    def __init__(
+        self,
+        title="Whack-a-zombie",
+        icon="resources/images/icon/icon.png",
+        width=1280,
+        height=720,
+    ):
         pygame.init()
 
         self.width = width
         self.height = height
+
         self.global_screen = pygame.display.set_mode((self.width, self.height))
-        self.highscore = 0
+        pygame.display.set_caption(title)
+        icon = pygame.image.load(icon)
+        pygame.display.set_icon(icon)
+
         self.background = pygame.image.load("resources/images/background/bg.png")
+        self.highscore = 0
 
     def game_round(self):
         pygame.mixer.init()
@@ -37,6 +49,7 @@ class GameManager:
 
         splat_sound = pygame.mixer.Sound("resources/music/Splat.ogg")
         background_music = pygame.mixer.Sound("resources/music/background.mp3")
+        eating_sound = pygame.mixer.Sound("resources/music/Zombie_Eating.mp3")
 
         num_sunflowers = 3
         for _ in range(num_sunflowers):
@@ -55,7 +68,7 @@ class GameManager:
         time_elapsed = 0
         score = 0
         level = 1
-
+        is_eating = False
 
         def on_zombie_die():
             nonlocal score
@@ -117,9 +130,17 @@ class GameManager:
             bullet_group.update(dt)
             cursor_group.update()
 
-            if len(sunflower_group) == 0:
-                cleanup()
-                return score
+            attacking = pygame.sprite.groupcollide(
+                zombie_group, sunflower_group, False, False
+            )
+            # if there is collision
+            if attacking and not is_eating:
+                is_eating = True
+                eating_sound.play(-1)
+            elif not attacking and is_eating:
+                is_eating = False
+                eating_sound.stop()
+
 
             # check collision between bullet and cursor
             collisions = pygame.sprite.groupcollide(
@@ -129,10 +150,6 @@ class GameManager:
                 cursor.receive_dmg(1)
                 splat_sound.play()
 
-            if len(cursor_group) == 0:
-                cleanup()
-                return score
-
             if self.background:
                 self.global_screen.blit(self.background, (0, 0))
             else:
@@ -141,7 +158,6 @@ class GameManager:
             for zombie in zombie_group:
                 zombie.draw_pow_fx(self.global_screen)
 
-    
             sunflower_group.draw(self.global_screen)
 
             for sunflower in sunflower_group:
@@ -153,7 +169,7 @@ class GameManager:
             for cursor in cursor_group:
                 cursor.draw_health_bar(self.global_screen)
 
-            font = pygame.font.Font(pygame_menu.font.FONT_MUNRO, 36) # type: ignore
+            font = pygame.font.Font(pygame_menu.font.FONT_MUNRO, 36)  # type: ignore
             margin = 10
             # draw level at top left
             text = font.render(f"Level: {level}", True, (255, 255, 255))
@@ -167,6 +183,14 @@ class GameManager:
 
             pygame.display.flip()
 
+            if len(cursor_group) == 0:
+                cleanup()
+                return score
+
+            if len(sunflower_group) == 0:
+                cleanup()
+                return score
+
     def run(self):
         while True:
             score = self.game_round()
@@ -174,6 +198,8 @@ class GameManager:
             # if window shut down during game round, return instead of showing game over screen
             if not pygame.display.get_init():
                 return
+
+            old_screen = self.global_screen.copy()
 
             # Game over screen
             menu = pygame_menu.Menu("Game Over", 300, 400, surface=self.global_screen)
@@ -184,8 +210,11 @@ class GameManager:
                 menu.add.label(f"Score: {score}")
                 menu.add.label(f"Highscore: {self.highscore}")
             menu.add.button("Play Again", action=lambda: menu.disable())
-            menu.add.button("Quit", pygame_menu.events.EXIT) # type: ignore
-            menu.mainloop(self.global_screen)
+            menu.add.button("Quit", pygame_menu.events.EXIT)  # type: ignore
+
+            menu.mainloop(
+                self.global_screen, lambda: self.global_screen.blit(old_screen, (0, 0))
+            )
 
 
 if __name__ == "__main__":
