@@ -1,4 +1,3 @@
-from io import BytesIO
 import pygame
 import random
 import pygame_menu
@@ -79,6 +78,7 @@ class GameManager:
 
         def cleanup():
             background_music.stop()
+            eating_sound.stop()
 
         while True:
             dt = clock.tick(30) / 1000  # in seconds
