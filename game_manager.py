@@ -35,6 +35,7 @@ class GameManager:
         bonk1_sound = pygame.mixer.Sound("resources/music/Bonk_1.mp3")
         bonk2_sound = pygame.mixer.Sound("resources/music/Bonk_2.mp3")
 
+        splat_sound = pygame.mixer.Sound("resources/music/Splat.ogg")
         background_music = pygame.mixer.Sound("resources/music/background.mp3")
 
         num_sunflowers = 3
@@ -127,6 +128,7 @@ class GameManager:
             )
             for cursor in collisions:
                 cursor.receive_dmg(1)
+                splat_sound.play()
 
             if len(cursor_group) == 0:
                 cleanup()
