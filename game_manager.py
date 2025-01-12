@@ -22,6 +22,7 @@ class GameManager:
         self.background = pygame.image.load("resources/images/background/bg.png")
 
     def game_round(self):
+        pygame.mixer.init()
         screen_w, screen_h = self.global_screen.get_size()
         clock = pygame.time.Clock()
 
@@ -30,6 +31,11 @@ class GameManager:
         bullet_group = sprite.Group()
         cursor_group = sprite.GroupSingle()
         cursor_group.add(Mallet())
+
+        bonk1_sound = pygame.mixer.Sound("resources/music/Bonk_1.mp3")
+        bonk2_sound = pygame.mixer.Sound("resources/music/Bonk_2.mp3")
+
+        background_music = pygame.mixer.Sound("resources/music/background.mp3")
 
         num_sunflowers = 3
         for _ in range(num_sunflowers):
@@ -49,9 +55,17 @@ class GameManager:
         score = 0
         level = 1
 
+
+
         def on_zombie_die():
             nonlocal score
             score += 1
+            random.choice([bonk1_sound, bonk2_sound]).play()
+
+        background_music.play(-1, 0)
+
+        def cleanup():
+            background_music.stop()
 
         while True:
             dt = clock.tick(30) / 1000  # in seconds
@@ -65,6 +79,7 @@ class GameManager:
             for event in events:
                 if event.type == pygame.QUIT:
                     pygame.quit()
+                    cleanup()
                     return score
 
             # spawner to spawn in a zombie
@@ -103,6 +118,7 @@ class GameManager:
             cursor_group.update()
 
             if len(sunflower_group) == 0:
+                cleanup()
                 return score
 
             # check collision between bullet and cursor
@@ -113,6 +129,7 @@ class GameManager:
                 cursor.receive_dmg(1)
 
             if len(cursor_group) == 0:
+                cleanup()
                 return score
 
             if self.background:
@@ -149,6 +166,10 @@ class GameManager:
     def run(self):
         while True:
             score = self.game_round()
+
+            # if window shut down during game round, return instead of showing game over screen
+            if not pygame.display.get_init():
+                return
 
             # Game over screen
             menu = pygame_menu.Menu("Game Over", 300, 400, surface=self.global_screen)

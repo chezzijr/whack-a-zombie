@@ -108,7 +108,7 @@ wheels = [
 ]
 
 [[package]]
-name = "zombie-whack-a-mole"
+name = "whack-a-zombie"
 version = "0.1.0"
 source = { virtual = "." }
 dependencies = [
