@@ -43,6 +43,15 @@ def load_attack_images():
         for i in range(0, 21)
     ]
 
+def pow_animation():
+    image = pygame.image.load("resources/images/fx/pow.png").convert_alpha()
+    w, h = image.get_size()
+    ratio = [0.5, 0.75] + [1.0 for _ in range(20)] + [0.75, 0.5, 0.25]
+    return [
+        pygame.transform.scale(image, (int(w * r), int(h * r)))
+        for r in ratio
+    ]
+
 
 class Zombie(sprite.Sprite):
     def __init__(self, pos: pygame.Vector2) -> None:
@@ -59,12 +68,17 @@ class Zombie(sprite.Sprite):
         self.is_alive = True
         self.kill_signal = Signal()
 
+        self.pow_animation = Animation(pow_animation(), repeat=False)
+        self.pos_hit = None
+
     def update(self, dt: float, targets: sprite.Group, events):
         for event in events:
             if event.type == pygame.MOUSEBUTTONDOWN:
                 if self.rect.collidepoint(event.pos):
                     self.is_alive = False
-                    self.kill_signal.emit() # emit to game manager that this zombie is dead
+                    if self.pos_hit is None:
+                        self.pos_hit = event.pos
+                        self.kill_signal.emit() # emit to game manager that this zombie is dead and run only once
 
         target = self.look_for_closest_target(targets)
         if target is None:
@@ -100,3 +114,10 @@ class Zombie(sprite.Sprite):
 
     def determine_orientation(self, target) -> bool:
         return target.rect.centerx >= self.rect.centerx
+
+    def draw_pow_fx(self, screen):
+        if not self.is_alive and not self.pow_animation.is_ended():
+            img = self.pow_animation.next_frame()
+            assert img is not None
+            rect = img.get_rect(center=self.pos_hit)
+            screen.blit(img, rect)

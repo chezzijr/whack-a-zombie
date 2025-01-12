@@ -79,8 +79,8 @@ class GameManager:
             events = pygame.event.get()
             for event in events:
                 if event.type == pygame.QUIT:
-                    pygame.quit()
                     cleanup()
+                    pygame.quit()
                     return score
 
             # spawner to spawn in a zombie
@@ -139,6 +139,10 @@ class GameManager:
             else:
                 self.global_screen.fill(WHITE)
             zombie_group.draw(self.global_screen)
+            for zombie in zombie_group:
+                zombie.draw_pow_fx(self.global_screen)
+
+    
             sunflower_group.draw(self.global_screen)
 
             for sunflower in sunflower_group:

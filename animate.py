@@ -14,14 +14,14 @@ class Animation:
 
     # only return None if the animation is not repeating and reached the end
     def next_frame(self, flip=False) -> pygame.Surface | None:
+        if self.is_ended() and not self.repeat:
+            return None
         frame = self.frames[self.current_frame]
-        self.current_frame += 1
-        if self.current_frame == self.frame_count:
-            if self.repeat:
-                self.current_frame = 0
-            else:
-                return None
+        self.current_frame = (self.current_frame + 1) % self.frame_count if self.repeat else self.current_frame + 1
         return frame if not flip else pygame.transform.flip(frame, True, False)
+
+    def is_ended(self) -> bool:
+        return self.current_frame == self.frame_count
 
     def reset(self) -> None:
         self.current_frame = 0
