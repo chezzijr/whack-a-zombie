@@ -1,5 +1,5 @@
 import pygame
-from pygame import sprite
+from pygame import sprite, transform
 from animate import Animation
 from enum import Enum
 from signaling import Signal
@@ -9,21 +9,23 @@ class ZombieState(Enum):
     ATTACK = 1
     DIE = 2
 
+SCALE = (0.75, 0.75)
 
 def load_move_images():
     return [
+        transform.scale_by(
         pygame.image.load(
             "resources/images/zombie/Zombie_{}.png".format(i)
-        ).convert_alpha()
+        ).convert_alpha(), SCALE)
         for i in range(0, 22)
     ]
 
 
 def load_die_images():
     die_images = [
-        pygame.image.load(
+        transform.scale_by(pygame.image.load(
             "resources/images/zombie/ZombieDie_{}.png".format(i)
-        ).convert_alpha()
+        ).convert_alpha(), SCALE)
         for i in range(0, 10)
     ]
     # add fading effect to die images
@@ -37,9 +39,9 @@ def load_die_images():
 
 def load_attack_images():
     return [
-        pygame.image.load(
+        transform.scale_by(pygame.image.load(
             "resources/images/zombie/ZombieAttack_{}.png".format(i)
-        ).convert_alpha()
+        ).convert_alpha(), SCALE)
         for i in range(0, 21)
     ]
 

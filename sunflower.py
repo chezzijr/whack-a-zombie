@@ -1,18 +1,20 @@
 import pygame
+from pygame import transform
 from animate import Animation
 
 RED = (255, 0, 0)
 GREEN = (0, 255, 0)
 SUNFLOWER_HEALTH = 5.0
+SCALE = (0.75, 0.75)
 
 class Sunflower(pygame.sprite.Sprite):
     def __init__(self, pos: pygame.Vector2) -> None:
         super(Sunflower, self).__init__()
         self.animation = Animation(
             [
-                pygame.image.load(
+                transform.scale_by(pygame.image.load(
                     "resources/images/sunflower/SunFlower_{:02d}.png".format(i)
-                ).convert_alpha()
+                ).convert_alpha(), SCALE)
                 for i in range(0, 13)
             ],
             repeat=True,
