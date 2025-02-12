@@ -207,15 +207,15 @@ class GameManager:
 
             if len(cursor_group) == 0:
                 cleanup()
-                return score, hit_count, miss_count, time_elapsed
+                return score, hit_count, miss_count, total_time
 
             if len(sunflower_group) == 0:
                 cleanup()
-                return score, hit_count, miss_count, time_elapsed
+                return score, hit_count, miss_count, total_time
 
     def run(self):
         while True:
-            score, hit_count, miss_count, time_elapsed = self.game_round()
+            score, hit_count, miss_count, total_time = self.game_round()
 
             # if window shut down during game round, return instead of showing game over screen
             if not pygame.display.get_init():
@@ -235,7 +235,7 @@ class GameManager:
                 menu.add.label(f"Score: {score}")
                 menu.add.label(f"Highscore: {self.highscore}")
 
-            menu.add.label(f"Time Played: {int(time_elapsed)}s")
+            menu.add.label(f"Time Played: {int(total_time)}s")
             menu.add.label(f"Hits: {hit_count}")
             menu.add.label(f"Misses: {miss_count}")
             menu.add.label(f"Accuracy: {accuracy:.1f}%")
