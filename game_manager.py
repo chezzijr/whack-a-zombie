@@ -65,13 +65,17 @@ class GameManager:
         interval_for_next_level = 10
 
         time_elapsed = 0
+        start_time = pygame.time.get_ticks() / 1000 # in seconds
+        hit_count = 0
+        miss_count = 0
         score = 0
         level = 1
         is_eating = False
 
         def on_zombie_die():
-            nonlocal score
+            nonlocal score, hit_count
             score += 1
+            hit_count += 1
             random.choice([bonk1_sound, bonk2_sound]).play()
 
         background_music.play(-1, 0)
@@ -94,6 +98,14 @@ class GameManager:
                     cleanup()
                     pygame.quit()
                     return score
+                
+                if event.type == pygame.MOUSEBUTTONDOWN and event.button == 1:
+                    cursor = cursor_group.sprite
+                    if not any(
+                        zombie.rect.collidepoint(event.pos) for zombie in zombie_group
+                    ):
+                        miss_count += 1
+
 
             # spawner to spawn in a zombie
             if time_since_last_zombie_spawn >= zombie_spawn_interval / level:
@@ -141,7 +153,6 @@ class GameManager:
                 is_eating = False
                 eating_sound.stop()
 
-
             # check collision between bullet and cursor
             collisions = pygame.sprite.groupcollide(
                 cursor_group, bullet_group, False, True
@@ -171,6 +182,17 @@ class GameManager:
 
             font = pygame.font.Font(pygame_menu.font.FONT_MUNRO, 36)  # type: ignore
             margin = 10
+            total_time = pygame.time.get_ticks() / 1000 - start_time # in seconds
+
+            #draw time count at top left
+            text = font.render(f"Time: {int(total_time)}s", True, (255, 255, 255))
+            self.global_screen.blit(text, (margin, 50))
+            
+            #draw hit count and miss count at top left
+            accuracy = (hit_count / (hit_count + miss_count)) * 100 if (hit_count + miss_count) > 0 else 0
+            text = font.render(f"Hits: {hit_count}  Misses: {miss_count}  Accuracy: {accuracy:.1f}%", True, (255, 255, 255))
+            self.global_screen.blit(text, (margin, 100))
+
             # draw level at top left
             text = font.render(f"Level: {level}", True, (255, 255, 255))
             self.global_screen.blit(text, (margin, margin))  # 10 pixels margin
@@ -185,21 +207,24 @@ class GameManager:
 
             if len(cursor_group) == 0:
                 cleanup()
-                return score
+                return score, hit_count, miss_count, time_elapsed
 
             if len(sunflower_group) == 0:
                 cleanup()
-                return score
+                return score, hit_count, miss_count, time_elapsed
 
     def run(self):
         while True:
-            score = self.game_round()
+            score, hit_count, miss_count, time_elapsed = self.game_round()
 
             # if window shut down during game round, return instead of showing game over screen
             if not pygame.display.get_init():
                 return
 
             old_screen = self.global_screen.copy()
+
+            #Calculating accuracy
+            accuracy = (hit_count / (hit_count + miss_count) * 100) if (hit_count + miss_count) > 0 else 0
 
             # Game over screen
             menu = pygame_menu.Menu("Game Over", 300, 400, surface=self.global_screen)
@@ -209,6 +234,12 @@ class GameManager:
             else:
                 menu.add.label(f"Score: {score}")
                 menu.add.label(f"Highscore: {self.highscore}")
+
+            menu.add.label(f"Time Played: {int(time_elapsed)}s")
+            menu.add.label(f"Hits: {hit_count}")
+            menu.add.label(f"Misses: {miss_count}")
+            menu.add.label(f"Accuracy: {accuracy:.1f}%")
+
             menu.add.button("Play Again", action=lambda: menu.disable())
             menu.add.button("Quit", pygame_menu.events.EXIT)  # type: ignore
 
